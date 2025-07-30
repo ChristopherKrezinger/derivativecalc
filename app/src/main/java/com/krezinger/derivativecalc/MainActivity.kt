@@ -9,9 +9,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.DrawerState
@@ -53,12 +55,12 @@ val MenuList: Array<String> = arrayOf(
     "About Me"
 )
 
-val TopBarHeight: Int = 64
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListInMenu() {
     ModalDrawerSheet( modifier = Modifier
-        .offset(y= TopBarHeight.dp),
+        .offset(y= TopAppBarDefaults.TopAppBarExpandedHeight +
+                WindowInsets.systemBars.asPaddingValues().calculateTopPadding()),
         drawerContainerColor = MaterialTheme.colorScheme.onPrimary,
         windowInsets = WindowInsets(0)
     )
