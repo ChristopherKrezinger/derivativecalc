@@ -9,8 +9,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,7 +19,6 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -37,13 +34,19 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.krezinger.derivativecalc.ui.theme.DerivativecalcTheme
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 class MainActivity : ComponentActivity() {
@@ -52,19 +55,23 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             DerivativecalcTheme{
-                ScreenWithDrawer({MainContainer()})
+                ScreenWithDrawer()
             }
         }
     }
 }
 
-val MenuList: Array<String> = arrayOf(
-    "History",
-    "About Me"
-)
+sealed class Screen {
+    object Home: Screen()
+    object History: Screen()
+    object AboutMe: Screen()
+}
+
 private const val AboutMeText: String = "Who ever did it to this page, first of all thank you for trying my app." +
-        "i am currently pursuing a bachelor degree in computer science. To further develop my skills and " +
-        "to learn Kotlin, I made this simple app in with Android Studio."
+        "I am currently pursuing a bachelor degree in computer science. To further develop my skills and " +
+        "to learn Kotlin, I made this simple app with Android Studio."
+
+private val StandardPadding: Dp = 30.dp
 
 @Composable
 fun ClickableButton(title: String,
@@ -76,7 +83,7 @@ fun ClickableButton(title: String,
      {
         Box(modifier = Modifier
             .fillMaxWidth()
-            .clickable{onClick}
+            .clickable{onClick()}
         ) {
             Text(modifier = modifier,text = title, color = MaterialTheme.colorScheme.onPrimaryContainer)
         }
@@ -86,34 +93,62 @@ fun ClickableButton(title: String,
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ListInMenu() {
-    ModalDrawerSheet( modifier = Modifier
-        .offset(y= TopAppBarDefaults.TopAppBarExpandedHeight +
-                WindowInsets.systemBars.asPaddingValues().calculateTopPadding()),
+fun ListInMenu(drawerState: DrawerState,
+               scope: CoroutineScope,
+               onScreenSelected: (Screen) -> Unit) {
+    val menuItems = mapOf(
+        "Home" to Screen.Home,
+        "About me" to Screen.AboutMe,
+        "History" to Screen.History
+    )
+    ModalDrawerSheet(
+        modifier = Modifier
+            .offset(
+                y = TopAppBarDefaults.TopAppBarExpandedHeight +
+                        WindowInsets.systemBars.asPaddingValues().calculateTopPadding()
+            ),
         drawerContainerColor = MaterialTheme.colorScheme.onPrimary,
         windowInsets = WindowInsets(0)
     ) {
-        MenuList.forEachIndexed { index, itemText ->
+        menuItems.forEach { (title, screenObject) ->
             ClickableButton(
-                title = itemText,
-                modifier = Modifier.padding(30.dp)
-            ) {
-                //needs UI-logic for About me and History
-            }
+                title = title,
+                modifier = Modifier.padding(StandardPadding),
+                onClick = {
+                    onScreenSelected(screenObject)
+                    scope.launch {
+                        drawerState.close()
+                    }
+                }
+            )
         }
-
     }
 }
 
 
 
+
 @Composable
-fun MainContainer(){
+fun HomeScreen(){
     Box(modifier = Modifier
         .fillMaxSize()
         .background(MaterialTheme.colorScheme.primary))
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AboutMeScreen(){
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colorScheme.primary),
+        contentAlignment = Alignment.Center
+
+    ){
+        Text(text = AboutMeText,
+            modifier = Modifier.padding(StandardPadding))
+    }
+
+}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(title: String = "", onMenuClick: () -> Unit){
@@ -129,24 +164,23 @@ fun TopBar(title: String = "", onMenuClick: () -> Unit){
               }
     )
 }
-@Composable
-fun AboutMe(){
-    ScreenWithDrawer {
-       Box{
-           Text(text = AboutMeText)
-       }
 
-    }
-
-}
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun ScreenWithDrawer(content: @Composable (PaddingValues) -> Unit){
+fun ScreenWithDrawer(){
     val drawerState: DrawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
+    var currentScreen: Screen by remember { mutableStateOf(Screen.Home) }
+
     ModalNavigationDrawer(
-        drawerContent = { ListInMenu() },
+        drawerContent = { ListInMenu(
+            drawerState = drawerState,
+            scope = scope,
+            onScreenSelected = { screenThatWasSelected ->
+                currentScreen = screenThatWasSelected
+            }
+        ) },
         drawerState = drawerState
     ){
         Scaffold(topBar = {
@@ -161,7 +195,11 @@ fun ScreenWithDrawer(content: @Composable (PaddingValues) -> Unit){
             }
         },
             content = { innerPadding ->
-                content(innerPadding)
+                when(currentScreen) {
+                    Screen.AboutMe -> AboutMeScreen()
+                    Screen.History -> TODO()
+                    Screen.Home -> HomeScreen()
+                }
             }
         )
     }
@@ -171,7 +209,7 @@ fun ScreenWithDrawer(content: @Composable (PaddingValues) -> Unit){
 @Composable
 fun AppPreview() {
     DerivativecalcTheme(dynamicColor = false) {
-        ScreenWithDrawer({MainContainer()})
+        ScreenWithDrawer()
 
     }
 }
