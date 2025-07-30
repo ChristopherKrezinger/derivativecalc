@@ -7,6 +7,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -23,6 +25,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import com.krezinger.derivativecalc.ui.theme.DerivativecalcTheme
 
@@ -51,26 +54,33 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
     )
 }
 
+@Composable
+fun Maincontainer(){
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colorScheme.primary))
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(title: String = "" ){
     TopAppBar(title = { Text(title) },
               colors = TopAppBarDefaults.topAppBarColors(
-                  containerColor = MaterialTheme.colorScheme.primaryContainer
+                  containerColor = MaterialTheme.colorScheme.onPrimary
               ),
               navigationIcon = {
                 IconButton(onClick = {Unit}) {
-                    Icon(Icons.Default.Menu, contentDescription = "")}})
+                    Icon(Icons.Default.Menu, contentDescription = "", tint = MaterialTheme.colorScheme.onPrimaryContainer)}})
 }
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
 @Composable
 fun GreetingPreview() {
-    DerivativecalcTheme {
+    DerivativecalcTheme(dynamicColor = false) {
         Scaffold(
             topBar = { TopBar() },
-            content = { Greeting("android") }
+            content = { Maincontainer() }
         )
     }
 }
