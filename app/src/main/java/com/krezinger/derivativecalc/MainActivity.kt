@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -50,8 +51,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            DerivativecalcTheme(dynamicColor = false) {
-                MainScreenWithDrawer()
+            DerivativecalcTheme{
+                ScreenWithDrawer({MainContainer()})
             }
         }
     }
@@ -61,13 +62,16 @@ val MenuList: Array<String> = arrayOf(
     "History",
     "About Me"
 )
+private const val AboutMeText: String = "Who ever did it to this page, first of all thank you for trying my app." +
+        "i am currently pursuing a bachelor degree in computer science. To further develop my skills and " +
+        "to learn Kotlin, I made this simple app in with Android Studio."
 
 @Composable
 fun ClickableButton(title: String,
                     color: Color = Color.Transparent,
                     modifier: Modifier = Modifier,
                     onClick: () -> Unit ){
-    /* somehow needs to be more scalable for enter button */
+    /* somehow needs to be more scalable for "enter" button */
     Card(colors = CardDefaults.cardColors(containerColor = color))
      {
         Box(modifier = Modifier
@@ -94,7 +98,7 @@ fun ListInMenu() {
                 title = itemText,
                 modifier = Modifier.padding(30.dp)
             ) {
-                //needs UIlogik for About me and History
+                //needs UI-logic for About me and History
             }
         }
 
@@ -125,10 +129,19 @@ fun TopBar(title: String = "", onMenuClick: () -> Unit){
               }
     )
 }
+@Composable
+fun AboutMe(){
+    ScreenWithDrawer {
+       Box{
+           Text(text = AboutMeText)
+       }
 
+    }
+
+}
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MainScreenWithDrawer() {
+fun ScreenWithDrawer(content: @Composable (PaddingValues) -> Unit){
     val drawerState: DrawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -147,16 +160,18 @@ fun MainScreenWithDrawer() {
                 }
             }
         },
-            content = { MainContainer() }
+            content = { innerPadding ->
+                content(innerPadding)
+            }
         )
     }
 }
 
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun AppPreview() {
     DerivativecalcTheme(dynamicColor = false) {
-        MainScreenWithDrawer()
+        ScreenWithDrawer({MainContainer()})
 
     }
 }
