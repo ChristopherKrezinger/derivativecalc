@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -34,19 +35,14 @@ import androidx.compose.ui.unit.dp
 import com.krezinger.derivativecalc.ui.theme.DerivativecalcTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            DerivativecalcTheme() {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+            DerivativecalcTheme(dynamicColor = false) {
+                MainScreenWithDrawer()
             }
         }
     }
@@ -59,21 +55,12 @@ val MenuList: Array<String> = arrayOf(
 
 val TopBarHeight: Int = 64
 
-
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
 @Composable
 fun ListInMenu() {
     ModalDrawerSheet( modifier = Modifier
         .offset(y= TopBarHeight.dp),
-        drawerContainerColor = MaterialTheme.colorScheme.onPrimary
+        drawerContainerColor = MaterialTheme.colorScheme.onPrimary,
+        windowInsets = WindowInsets(0)
     )
             {
         MenuList.forEachIndexed{
@@ -139,7 +126,7 @@ fun TopBar(title: String = "", onMenuClick: () -> Unit){
 
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun GreetingPreview() {
+fun AppPreview() {
     DerivativecalcTheme(dynamicColor = false) {
         MainScreenWithDrawer()
 
