@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "derivativecalc"
 include(":app")
- 
+include(":lib")
