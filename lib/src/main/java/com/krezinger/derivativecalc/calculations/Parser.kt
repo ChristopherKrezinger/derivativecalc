@@ -1,15 +1,19 @@
 package com.krezinger.derivativecalc.calculations
 
+import kotlin.collections.plusAssign
+import kotlin.text.isDigit
+import kotlin.text.isLetter
+
 class Parser {
     // needs optimization for: (sin, cos, tan, exp, log)!
-    fun Tokenizer(input : String) : List<String>{
+    fun tokenizer(input : String) : List<String>{
         val tokens = mutableListOf<String>()
         var index = 0
 
         while(index < input.length){
             val current = input[index]
 
-            //1. case, digits
+            //1. case, positive number
             if(current.isDigit()){
                 var number = ""
 
@@ -25,6 +29,25 @@ class Parser {
                     index++
                 }
             }
+
+            //2.case, negative number
+            if(current == '-' && isNegative(tokens = tokens, index = index )){
+                index++
+                var number = "-"
+
+                while (index < input.length && input[index].isDigit()){
+                    number += input[index]
+                    index++
+                }
+                tokens += number
+
+                //for e.g. 2x input
+                if(index < input.length && input[index].isLetter()){
+                    tokens += listOf("*", input[index].toString())
+                    index++
+                }
+            }
+
             else{
                 tokens += current.toString()
                 index++
@@ -35,4 +58,12 @@ class Parser {
         return tokens
     }
 
+    fun isOperator(token: String): Boolean{
+        return token in listOf("+","-","*","^", "/")
+    }
+    fun isNegative(tokens: List<String>, index: Int): Boolean{
+        return index == 0 ||
+                (tokens.isNotEmpty() && (tokens.last() == "(" || isOperator(tokens.last())))
+
+    }
 }
