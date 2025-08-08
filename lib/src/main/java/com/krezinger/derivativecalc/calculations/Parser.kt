@@ -4,6 +4,14 @@ import kotlin.collections.plusAssign
 import kotlin.text.isDigit
 import kotlin.text.isLetter
 
+sealed class Token {
+    data class Number(val value: Double) : Token()
+    data class Variable(val name: Char) : Token()
+    data class Operand(val symbol: Char) : Token()
+    data class Bracket(val type: BracketType) : Token()
+
+    enum class BracketType { OPEN, CLOSE }
+}
 class Parser {
     // needs optimization for: (sin, cos, tan, exp, log)!
     fun tokenizer(input : String) : List<String>{
