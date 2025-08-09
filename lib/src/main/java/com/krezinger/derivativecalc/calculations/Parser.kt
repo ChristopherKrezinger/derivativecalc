@@ -10,10 +10,14 @@ sealed class Token {
     data class Operand(val symbol: Char) : Token()
     data class Bracket(val type: BracketType) : Token()
 
-    enum class BracketType { OPEN, CLOSE }
+    enum class BracketType(symbol: Char){
+        OPEN('('),
+        CLOSE(')')
+    }
 }
 class Parser {
     // needs optimization for: (sin, cos, tan, exp, log)!
+    // lexer for return type List<Token> needed
     fun tokenizer(input : String) : List<String>{
         val tokens = mutableListOf<String>()
         var index = 0
@@ -64,6 +68,29 @@ class Parser {
 
         }
         return tokens
+    }
+
+    fun lexer(token: String): Token{
+        // Integer(for now needs Double later
+        val numberRegex = Regex("^-?\\d+$")
+        // Variables
+        val variableRegex = Regex("^[a-zA-Z]$")
+        // Operators
+        val operatorRegex = Regex("^[+\\-*/^]$")
+        // Opening bracket
+        val openParenRegex = Regex("^\\($")
+        // Closing Bracket
+        val closeParenRegex = Regex("^\\)$")
+
+        return when {
+            numberRegex.matches(token) -> Token.Number(token.toDouble())
+            variableRegex.matches(token) -> Token.Variable(token[0])
+            operatorRegex.matches(token) -> Token.Operand(token[0])
+            openParenRegex.matches(token) -> Token.Bracket(Token.BracketType.OPEN)
+            closeParenRegex.matches(token) -> Token.Bracket(Token.BracketType.CLOSE)
+            else -> throw IllegalArgumentException("invalid token")
+        }
+
     }
 
     fun isOperator(token: String): Boolean{
